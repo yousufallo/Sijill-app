@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>سجلّي - متابعة الطلاب</title>
+<meta name="theme-color" content="#2B3A35">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --slate:#2B3A35;
+  --slate-light:#3d524b;
+  --cream:#FAF7F0;
+  --cream-dim:#F1ECE1;
+  --terracotta:#C4622D;
+  --terracotta-dark:#A8501F;
+  --gold:#D4A24C;
+  --sage:#7C9885;
+  --charcoal:#3A3530;
+  --red:#C44536;
+  --green:#5A8C5A;
+  --line:#E3DCC9;
+  --radius:16px;
+  --shadow:0 2px 10px rgba(43,58,53,0.08);
+  --shadow-lg:0 8px 30px rgba(43,58,53,0.16);
+}
+html[data-theme="sage"]{
+  --cream:#F3F6F1;
+  --cream-dim:#E9EEE5;
+  --line:#D9E2D3;
+  --charcoal:#33392F;
+}
+html[data-theme="sand"]{
+  --cream:#FBF3E7;
+  --cream-dim:#F4E6D1;
+  --line:#E8D3AE;
+  --charcoal:#40342A;
+}
+html[data-theme="sky"]{
+  --cream:#F0F5F8;
+  --cream-dim:#E2EDF2;
+  --line:#CFE0E8;
+  --charcoal:#2B3A40;
+}
+html[data-theme="dark"]{
+  --slate:#1A2420;
+  --slate-light:#26342E;
+  --cream:#20251F;
+  --cream-dim:#2A3128;
+  --line:#3A4138;
+  --charcoal:#EDE8DC;
+  --shadow:0 2px 10px rgba(0,0,0,0.35);
+  --shadow-lg:0 8px 30px rgba(0,0,0,0.5);
+}
+html[data-theme="dark"] body{ color:var(--charcoal); }
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .class-card,
+html[data-theme="dark"] .student-row,
+html[data-theme="dark"] .stat-box,
+html[data-theme="dark"] .history-list-item,
+html[data-theme="dark"] .sheet{
+  background:#28302A;
+}
+html[data-theme="dark"] .class-name,
+html[data-theme="dark"] .student-name,
+html[data-theme="dark"] .history-status{
+  color:var(--charcoal);
+}
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .field select,
+html[data-theme="dark"] .note-input{
+  background:#1C211B;
+  color:var(--charcoal);
+  border-color:var(--line);
+}
+html[data-theme="dark"] .hw-box,
+html[data-theme="dark"] .chip{
+  background:#1C211B;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; padding:0;}
+html,body{
+  background:var(--cream);
+  color:var(--charcoal);
+  font-family:'Tajawal','Inter',sans-serif;
+  height:100%;
+  overscroll-behavior-y:none;
+}
+#app{
+  max-width:560px;
+  margin:0 auto;
+  min-height:100vh;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  padding-bottom:100px;
+}
+.serif{font-family:'Fraunces','Tajawal',serif;}
+.tabular{font-variant-numeric:tabular-nums;}
+
+/* ===== Top bar ===== */
+.topbar{
+  background:var(--slate);
+  color:var(--cream);
+  padding:18px 20px 22px;
+  position:sticky;
+  top:0;
+  z-index:20;
+  border-radius:0 0 22px 22px;
+  box-shadow:var(--shadow-lg);
+}
+.topbar-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.topbar-title{font-family:'Fraunces',serif; font-weight:600; font-size:22px; letter-spacing:.2px;}
+.topbar-sub{font-size:13px; opacity:.75; margin-top:2px;}
+.icon-btn{
+  background:rgba(255,255,255,0.1);
+  border:none;
+  color:var(--cream);
+  width:38px; height:38px;
+  border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px;
+  cursor:pointer;
+}
+.icon-btn:active{background:rgba(255,255,255,0.22);}
+
+/* ===== Generic screen padding ===== */
+.screen{padding:18px 18px 10px;}
+.section-label{
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--sage);
+  letter-spacing:.5px;
+  margin:18px 4px 8px;
+  display:flex; align-items:center; gap:6px;
+}
+
+/* ===== Cards ===== */
+.card{
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+  margin-bottom:12px;
+}
+.class-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px;
+  background:#fff;
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  margin-bottom:12px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:transform .08s;
+}
+.class-card:active{transform:scale(0.98);}
+.report-btn{
+  background:var(--cream-dim);
+  border:none;
+  width:34px; height:34px;
+  border-radius:10px;
+  font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  cursor:pointer;
+}
+.report-btn:active{background:var(--line);}
+.class-dot{
+  width:48px; height:48px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Fraunces',serif;
+  font-weight:700;
+  font-size:19px;
+  color:#fff;
+  flex-shrink:0;
+}
+.class-info{flex:1; min-width:0;}
+.class-name{font-weight:700; font-size:16.5px; color:var(--charcoal);}
+.class-meta{font-size:12.5px; color:#8a8378; margin-top:3px;}
+.class-arrow{color:#c9c2b3; font-size:20px;}
+
+/* ===== Empty state ===== */
+.empty{
+  text-align:center;
+  padding:50px 20px;
+  color:#9a9384;
+}
+.empty-icon{font-size:42px; margin-bottom:10px; opacity:.6;}
+.empty-title{font-weight:700; color:var(--charcoal); font-size:16px; margin-bottom:6px;}
+.empty-text{font-size:13.5px; line-height:1.6;}
+
+/* ===== Buttons ===== */
+.btn{
+  border:none;
+  border-radius:14px;
+  padding:14px 18px;
+  font-family:inherit;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn-primary{background:var(--terracotta); color:#fff;}
+.btn-primary:active{background:var(--terracotta-dark);}
+.btn-ghost{background:var(--cream-dim); color:var(--charcoal);}
+.btn-ghost:active{background:var(--line);}
+.btn-block{width:100%;}
+.btn-sm{padding:9px 14px; font-size:13px; border-radius:10px;}
+.btn-danger{background:#fbe9e7; color:var(--red);}
+.fab{
+  position:fixed;
+  bottom:calc(78px + env(safe-area-inset-bottom));
+  left:50%;
+  transform:translateX(-50%);
+  max-width:520px;
+  width:calc(100% - 36px);
+  z-index:45;
+}
+
+/* ===== Inputs ===== */
+.field{margin-bottom:14px;}
+.field label{
+  display:block;
+  font-size:13px;
+  font-weight:700;
+  color:var(--slate);
+  margin-bottom:6px;
+}
+.field input,.field textarea,.field select{
+  width:100%;
+  border:1.5px solid var(--line);
+  background:var(--cream-dim);
+  border-radius:12px;
+  padding:12px 14px;
+  font-family:inherit;
+  font-size:15px;
+  color:var(--charcoal);
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;
+  border-color:var(--terracotta);
+  background:#fff;
+}
+.field textarea{resize:vertical; min-height:70px;}
+
+/* ===== Modal / sheet ===== */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(43,58,53,0.45);
+  z-index:50;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+}
+.overlay.show{opacity:1; pointer-events:auto;}
+.sheet{
+  background:var(--cream);
+  width:100%;
+  max-width:560px;
+  border-radius:24px 24px 0 0;
+  max-height:88vh;
+  overflow-y:auto;
+  padding:10px 20px 26px;
+  transform:translateY(100%);
+  transition:transform .25s cubic-bezier(.32,.72,0,1);
+}
+.overlay.show .sheet{transform:translateY(0);}
+.sheet-handle{
+  width:38px; height:4px;
+  background:var(--line);
+  border-radius:3px;
+  margin:8px auto 14px;
+}
+.sheet-title{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:19px;
+  margin-bottom:16px;
+}
+
+/* ===== Bottom nav ===== */
+.bottomnav{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  background:#fff;
+  border-top:1px solid var(--line);
+  display:flex;
+  max-width:560px;
+  margin:0 auto;
+  z-index:40;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  padding:11px 0 9px;
+  color:#a39c8c;
+  font-size:11.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.nav-item .nav-ic{font-size:19px;}
+.nav-item.active{color:var(--terracotta);}
+
+/* ===== Search sheet ===== */
+.search-box{
+  display:flex; align-items:center; gap:8px;
+  background:var(--cream-dim);
+  border:1.5px solid var(--line);
+  border-radius:12px;
+  padding:10px 14px;
+  margin-bottom:14px;
+}
+.search-box input{
+  flex:1; border:none; background:transparent;
+  font-family:inherit; font-size:15px; color:var(--charcoal);
+  outline:none;
+}
+.search-results{max-height:55vh; overflow-y:auto;}
+.search-result-row{
+  display:flex; align-items:center; gap:12px;
+  padding:11px 6px;
+  border-bottom:1px solid var(--line);
+  cursor:pointer;
+}
+.search-result-row:last-child{border-bottom:none;}
+.search-result-name{font-weight:700; font-size:15px; color:var(--charcoal); flex:1;}
+.search-result-class{font-size:12.5px; color:#8a8378;}
+.search-empty{text-align:center; color:#9a9384; padding:30px 10px; font-size:14px;}
+
+/* ===== Session: student rows ===== */
+.student-row{
+  background:#fff;
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:13px 14px;
+  margin-bottom:10px;
+}
+.student-row.picked-flash{
+  animation:pickedFlash 1.8s ease;
+  border:2px solid var(--terracotta);
+}
+@keyframes pickedFlash{
+  0%{ box-shadow:0 0 0 6px rgba(196,98,45,0.35); }
+  100%{ box-shadow:var(--shadow); }
+}
+.student-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.student-avatar{
+  width:38px; height:38px;
+  border-radius:10px;
+  background:var(--cream-dim);
+  color:var(--slate);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700;
+  font-size:14px;
+  flex-shrink:0;
+}
+.student-name{font-weight:700; font-size:15px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.history-strip{display:flex; gap:3px; margin-top:6px; margin-right:48px;}
+.hdot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+
+.status-chips{display:flex; gap:6px; flex-shrink:0;}
+.chip{
+  width:34px; height:34px;
+  border-radius:10px;
+  border:1.5px solid var(--line);
+  background:var(--cream-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px;
+  cursor:pointer;
+  color:#b3ab9a;
+}
+.chip.active-present{background:var(--green); border-color:var(--green); color:#fff;}
+.chip.active-absent{background:var(--red); border-color:var(--red); color:#fff;}
+.chip.active-late{background:var(--gold); border-color:var(--gold); color:#fff;}
+
+.student-extra{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px dashed var(--line);
+  display:none;
+}
+.student-extra.show{display:block;}
+.extra-row{display:flex; align-items:center; gap:8px; margin-bottom:8px;}
+.extra-label{font-size:12px; font-weight:700; color:var(--sage); width:62px; flex-shrink:0;}
+.hw-toggle{display:flex; gap:6px;}
+.hw-box{
+  width:34px; height:34px;
+  border-radius:10px;
+  border:1.5px solid var(--line);
+  background:var(--cream-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  font-weight:800;
+  color:#b3ab9a;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.hw-box.on-yes{background:var(--green); border-color:var(--green); color:#fff;}
+.hw-box.on-no{background:var(--red); border-color:var(--red); color:#fff;}
+
+.tool-toggle{display:flex; gap:10px; flex-wrap:wrap;}
+.tool-toggle-fixed{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px dashed var(--line);
+  gap:16px;
+}
+.tool-check{
+  display:flex; align-items:center; gap:7px;
+  cursor:pointer;
+}
+.tool-icon{
+  width:26px; height:26px;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  flex-shrink:0;
+  border:1.5px solid transparent;
+}
+.tool-check.on .tool-icon{background:var(--green); border-color:var(--green); color:#fff;}
+.tool-check.off .tool-icon{background:var(--red); border-color:var(--red); color:#fff;}
+.tool-label{font-size:12.5px; font-weight:700; color:var(--charcoal);}
+.note-input{
+  width:100%;
+  border:1.5px solid var(--line);
+  background:var(--cream-dim);
+  border-radius:10px;
+  padding:8px 11px;
+  font-size:13.5px;
+  font-family:inherit;
+}
+.expand-toggle{
+  font-size:12px;
+  color:var(--terracotta);
+  font-weight:700;
+  text-align:center;
+  margin-top:8px;
+  cursor:pointer;
+}
+
+/* ===== Multi-select bar ===== */
+.select-bar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 12px;
+}
+.select-bar .sb-count{
+  font-size:13px;
+  font-weight:700;
+  color:var(--slate);
+  flex:1;
+  min-width:0;
+}
+.sb-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:var(--cream-dim);
+  border:none;
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--slate);
+  cursor:pointer;
+  font-family:inherit;
+  flex-shrink:0;
+}
+.sb-btn:active{background:var(--line);}
+.sb-btn.sb-danger{background:#fbe9e7; color:var(--red);}
+.sb-btn.sb-close{
+  width:34px; height:34px;
+  padding:0;
+  justify-content:center;
+  border-radius:10px;
+}
+.student-row{position:relative; transition:background .12s;}
+.student-row.selectable{cursor:pointer;}
+.student-row.selected{background:#FBEEE3;}
+html[data-theme="dark"] .student-row.selected{background:#3a2c20;}
+.student-check{
+  width:22px; height:22px;
+  border-radius:50%;
+  border:2px solid var(--line);
+  background:#fff;
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px;
+  color:#fff;
+  transition:all .12s;
+}
+.student-check.checked{background:var(--terracotta); border-color:var(--terracotta);}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;
+  bottom:100px;
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--slate);
+  color:#fff;
+  padding:11px 22px;
+  border-radius:30px;
+  font-size:13.5px;
+  font-weight:700;
+  box-shadow:var(--shadow-lg);
+  z-index:60;
+  opacity:0;
+  pointer-events:none;
+  transition:all .25s;
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* ===== Misc ===== */
+.row-between{display:flex; align-items:center; justify-content:space-between;}
+.pill{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--cream-dim);
+  border-radius:20px;
+  padding:6px 13px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--slate);
+}
+.pill.active{background:var(--terracotta); color:#fff;}
+.chips-scroll{display:flex; gap:8px; overflow-x:auto; padding:4px 2px 2px; margin-bottom:6px;}
+.chips-scroll::-webkit-scrollbar{display:none;}
+
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:6px;}
+.stat-box{
+  background:#fff;
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  padding:14px;
+  text-align:center;
+}
+.stat-num{font-family:'Fraunces',serif; font-weight:700; font-size:26px;}
+.stat-lbl{font-size:11.5px; color:#9a9384; margin-top:2px; font-weight:700;}
+
+.history-list-item{
+  display:flex; align-items:center; gap:10px;
+  background:#fff; border-radius:14px; box-shadow:var(--shadow);
+  padding:12px 14px; margin-bottom:9px;
+}
+.history-date{
+  width:46px; text-align:center; flex-shrink:0;
+}
+.history-date .d{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1;}
+.history-date .m{font-size:10px; color:#9a9384; font-weight:700;}
+.history-body{flex:1; min-width:0;}
+.history-status{font-weight:700; font-size:13.5px;}
+.history-note{font-size:12px; color:#8a8378; margin-top:2px;}
+
+.swatch-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;}
+
+.theme-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+.theme-option{
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer;
+  padding:8px 4px;
+  border-radius:14px;
+  border:2px solid transparent;
+}
+.theme-option.sel{border-color:var(--terracotta); background:var(--cream-dim);}
+.theme-swatch{width:42px; height:42px; border-radius:50%; box-shadow:inset 0 0 0 1.5px rgba(0,0,0,0.08);}
+.theme-name{font-size:11.5px; font-weight:700; text-align:center; color:var(--charcoal);}
+.swatch{
+  width:30px; height:30px; border-radius:50%;
+  border:2px solid transparent; cursor:pointer;
+}
+.swatch.sel{border-color:var(--charcoal);}
+
+@media (max-width:380px){
+  .student-name{font-size:14px;}
+  .chip{width:31px; height:31px;}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   سجلّي — تطبيق متابعة الطلاب
+   تخزين دائم بالكامل عبر localStorage (يعمل بدون انترنت)
+========================================================= */
+
+const DB_KEY = 'sajjeli_data_v1';
+const COLORS = ['#C4622D','#7C9885','#D4A24C','#5A8C9A','#9A6BA8','#C44536','#4D7C6F','#B5874E'];
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { classes: [], sessions: [] };
+}
+function saveDB(){
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+}
+let DB = loadDB();
+
+const THEME_KEY = 'sajjeli_theme_v1';
+const THEMES = [
+  { id:'cream', name:'كريمي (الافتراضي)', swatch:'#FAF7F0' },
+  { id:'sage',  name:'أخضر فاتح',          swatch:'#E9EEE5' },
+  { id:'sand',  name:'رملي',               swatch:'#F4E6D1' },
+  { id:'sky',   name:'سماوي',              swatch:'#E2EDF2' },
+  { id:'dark',  name:'وضع ليلي',           swatch:'#20251F' },
+];
+function loadTheme(){
+  return localStorage.getItem(THEME_KEY) || 'cream';
+}
+function applyTheme(themeId){
+  if(themeId === 'cream'){
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', themeId);
+  }
+}
+function saveTheme(themeId){
+  localStorage.setItem(THEME_KEY, themeId);
+  applyTheme(themeId);
+}
+applyTheme(loadTheme());
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function shuffleArray(arr){
+  const a = [...arr];
+  for(let i=a.length-1; i>0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(iso){
+  const d = new Date(iso+'T00:00:00');
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return { day:d.getDate(), month:months[d.getMonth()] };
+}
+function fmtFull(iso){
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const d = new Date(iso+'T00:00:00');
+  const {day,month} = fmtDate(iso);
+  return `${days[d.getDay()]} ${day} ${month}`;
+}
+function initials(name){
+  const parts = name.trim().split(' ').filter(Boolean);
+  return parts.slice(0,2).map(p=>p[0]).join('');
+}
+function sortedStudents(c){
+  return [...c.students].sort((a,b)=>a.name.localeCompare(b.name, 'ar'));
+}
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ===================== ROUTER STATE ===================== */
+let route = { screen:'home' }; // home | classStudents | session | studentProfile | classSettings
+let installPromptEvent = null;
+
+function nav(r){ route = r; render(); window.scrollTo(0,0); }
+
+function enterSelectMode(firstId){
+  if(route.screen !== 'classStudents') return;
+  route.selectMode = true;
+  route.selectedIds = new Set(firstId ? [firstId] : []);
+  render();
+  if(navigator.vibrate) navigator.vibrate(12);
+}
+
+/* ===================== RENDER ROOT ===================== */
+function render(){
+  const app = document.getElementById('app');
+  if(route.screen === 'home') app.innerHTML = renderHome();
+  else if(route.screen === 'classStudents') app.innerHTML = renderClassStudents(route.classId);
+  else if(route.screen === 'session') app.innerHTML = renderSession(route.classId, route.date, route.seq);
+  else if(route.screen === 'studentProfile') app.innerHTML = renderStudentProfile(route.classId, route.studentId);
+  else if(route.screen === 'history') app.innerHTML = renderClassHistory(route.classId);
+  else if(route.screen === 'settings') app.innerHTML = renderSettings();
+  attachHandlers();
+}
+
+/* ===================== HOME ===================== */
+function renderHome(){
+  let body = '';
+  if(DB.classes.length === 0){
+    body = `
+      <div class="empty">
+        <div class="empty-icon">📚</div>
+        <div class="empty-title">لا يوجد صفوف بعد</div>
+        <div class="empty-text">أضف أول صف لتبدأ بمتابعة طلابك<br>خلال الحصص الصفية</div>
+      </div>`;
+  }else{
+    body = DB.classes.map((c,i)=>{
+      const count = c.students.length;
+      const lastSession = DB.sessions.filter(s=>s.classId===c.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
+      const lastTxt = lastSession ? `آخر حصة: ${fmtFull(lastSession.date)}` : 'لا توجد حصص مسجلة';
+      return `
+      <div class="class-card" data-action="openClass" data-id="${c.id}">
+        <div class="class-dot" style="background:${c.color}">${initials(c.name)}</div>
+        <div class="class-info">
+          <div class="class-name">${esc(c.name)}</div>
+          <div class="class-meta">${count} طالب · ${lastTxt}</div>
+        </div>
+        <button class="report-btn" data-action="openReport" data-id="${c.id}" title="تقرير قابل للطباعة">🖨️</button>
+        <div class="class-arrow">‹</div>
+      </div>`;
+    }).join('');
+  }
+
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <div class="topbar-title">سجلّي</div>
+          <div class="topbar-sub">${fmtFull(todayISO())}</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen">
+      <button class="btn btn-primary btn-block" style="margin-bottom:16px;" data-action="newClass">+ إضافة صف جديد</button>
+      <div class="section-label">صفوفي</div>
+      ${body}
+    </div>
+    ${bottomNav('home')}
+  `;
+}
+
+function bottomNav(active){
+  return `
+  <div class="bottomnav">
+    <div class="nav-item ${active==='home'?'active':''}" data-action="goHome">
+      <div class="nav-ic">🏠</div>الصفوف
+    </div>
+    <div class="nav-item ${active==='search'?'active':''}" data-action="openSearch">
+      <div class="nav-ic">🔍</div>بحث
+    </div>
+    <div class="nav-item ${active==='settings'?'active':''}" data-action="goSettings">
+      <div class="nav-ic">⚙️</div>إعدادات
+    </div>
+  </div>`;
+}
+
+/* ===================== CLASS STUDENTS / DASHBOARD ===================== */
+function renderClassStudents(classId){
+  const c = DB.classes.find(x=>x.id===classId);
+  if(!c) { nav({screen:'home'}); return ''; }
+  const today = todayISO();
+  const sessionToday = DB.sessions.find(s=>s.classId===classId && s.date===today);
+
+  const selectMode = !!route.selectMode;
+  const selectedIds = route.selectedIds || new Set();
+  const allSelected = c.students.length>0 && c.students.every(s=>selectedIds.has(s.id));
+
+  const studentRows = c.students.length===0 ? `
+    <div class="empty">
+      <div class="empty-icon">🧑‍🎓</div>
+      <div class="empty-title">لا يوجد طلاب في هذا الصف</div>
+      <div class="empty-text">أضف أسماء الطلاب لتبدأ بتسجيل الحصص</div>
+    </div>` : sortedStudents(c).map((s,idx)=>{
+      const hist = studentSessionHistory(classId, s.id).slice(-8);
+      const dots = hist.map(h=>{
+        const color = h.status==='absent'?'#C44536':h.late===true?'#D4A24C':h.status==='present'?'#5A8C5A':'#e3dcc9';
+        return `<div class="hdot" style="background:${color}"></div>`;
+      }).join('');
+      const isSel = selectedIds.has(s.id);
+      const rowAction = selectMode ? 'toggleSelectStudent' : 'openProfile';
+      const isPicked = route.pickedStudent === s.id;
+      return `
+      <div class="student-row ${selectMode?'selectable':''} ${isSel?'selected':''} ${isPicked?'picked-flash':''}" id="srow-${s.id}" data-action="${rowAction}" data-id="${s.id}" data-longpress="studentRow">
+        <div class="student-top">
+          ${selectMode ? `<div class="student-check ${isSel?'checked':''}">${isSel?'✓':''}</div>` : `<div class="student-avatar tabular">${idx+1}</div>`}
+          <div class="student-name">${esc(s.name)}</div>
+          ${selectMode ? '' : `<button class="report-btn" data-action="openStudentReport" data-cid="${classId}" data-sid="${s.id}" title="تقرير الطالب">🖨️</button>`}
+          ${selectMode ? '' : '<div class="class-arrow">‹</div>'}
+        </div>
+        ${dots && !selectMode ? `<div class="history-strip">${dots}</div>` : ''}
+      </div>`;
+    }).join('');
+
+  const headerRow = selectMode ? `
+      <div class="select-bar" style="margin-top:6px;">
+        <button class="sb-btn sb-close" data-action="exitSelectMode" title="إلغاء">✕</button>
+        <div class="sb-count">${selectedIds.size>0 ? `تم تحديد ${selectedIds.size}` : 'اختر طلابًا'}</div>
+        <button class="sb-btn" data-action="selectAllStudents" data-id="${c.id}">${allSelected?'إلغاء الكل':'تحديد الكل'}</button>
+        ${selectedIds.size>0 ? `
+        <button class="sb-btn" data-action="openBulkTransfer" data-id="${c.id}">↔️ نقل</button>
+        <button class="sb-btn sb-danger" data-action="bulkDeleteStudents" data-id="${c.id}">🗑 حذف</button>` : ''}
+      </div>` : `
+      <div class="row-between" style="margin-top:6px;">
+        <div class="section-label" style="margin:0;">قائمة الطلاب</div>
+        <span class="pill" data-action="viewHistory" data-id="${c.id}">📋 سجل الحصص</span>
+      </div>`;
+
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="icon-btn" data-action="goHome">→</button>
+        <div style="text-align:center; flex:1;">
+          <div class="topbar-title">${esc(c.name)}</div>
+          <div class="topbar-sub">${c.students.length} طالب</div>
+        </div>
+        <button class="icon-btn" data-action="classMenu" data-id="${c.id}">⋮</button>
+      </div>
+    </div>
+    <div class="screen">
+      ${headerRow}
+      ${studentRows}
+      <div style="height:8px"></div>
+    </div>
+    ${selectMode ? '' : (sessionToday ? `
+    <div class="fab" style="display:flex; gap:8px;">
+      <button class="btn btn-primary" style="flex:1;" data-action="openSession" data-id="${c.id}">↻ متابعة حصة اليوم</button>
+      <button class="btn btn-ghost" style="flex:0 0 auto; padding:14px 16px;" data-action="newSession" data-id="${c.id}">+ حصة جديدة</button>
+    </div>` : `
+    <button class="btn btn-primary fab" data-action="startSession" data-id="${c.id}">+ بدء حصة اليوم</button>`)}
+    ${bottomNav('')}
+  `;
+}
+
+/* ===================== SESSION SCREEN ===================== */
+function studentSessionHistory(classId, studentId){
+  return DB.sessions
+    .filter(s=>s.classId===classId)
+    .sort((a,b)=>{
+      const cmp = a.date.localeCompare(b.date);
+      if(cmp !== 0) return cmp;
+      return (a.seq||1)-(b.seq||1);
+    })
+    .map(s=> ({ date:s.date, ...(s.records[studentId]||{status:null}) }) )
+    .filter(r=>r.status);
+}
+
+function getSessionsForDate(classId, date){
+  return DB.sessions
+    .filter(x=>x.classId===classId && x.date===date)
+    .sort((a,b)=>(a.seq||1)-(b.seq||1));
+}
+function getOrCreateSession(classId, date, seq){
+  seq = seq || 1;
+  let s = DB.sessions.find(x=>x.classId===classId && x.date===date && (x.seq||1)===seq);
+  if(!s){
+    s = { id:uid(), classId, date, seq, records:{} };
+    const c = DB.classes.find(x=>x.id===classId);
+    if(c){
+      c.students.forEach(stu=>{ s.records[stu.id] = { status:'present' }; });
+    }
+    DB.sessions.push(s);
+    saveDB();
+  } else {
+    // if students were added to the class after this session was created,
+    // give them the same "present by default" treatment without touching anyone already recorded.
+    const c = DB.classes.find(x=>x.id===classId);
+    if(c){
+      let changed = false;
+      c.students.forEach(stu=>{
+        if(!s.records[stu.id]){ s.records[stu.id] = { status:'present' }; changed = true; }
+      });
+      if(changed) saveDB();
+    }
+  }
+  return s;
+}
+/* moves a single student (and their session history) from one class to another. returns the student object, or null if not found. does NOT call saveDB(). */
+function transferStudentRecord(fromCid, sid, toCid){
+  const fromClass = DB.classes.find(x=>x.id===fromCid);
+  const toClass = DB.classes.find(x=>x.id===toCid);
+  if(!fromClass || !toClass) return null;
+  const student = fromClass.students.find(s=>s.id===sid);
+  if(!student) return null;
+
+  fromClass.students = fromClass.students.filter(s=>s.id!==sid);
+  toClass.students.push(student);
+
+  DB.sessions.forEach(oldSession=>{
+    if(oldSession.classId !== fromCid || !oldSession.records[sid]) return;
+    const rec = oldSession.records[sid];
+    const oldSeq = oldSession.seq || 1;
+    delete oldSession.records[sid];
+    let targetSession = DB.sessions.find(s=>s.classId===toCid && s.date===oldSession.date && (s.seq||1)===oldSeq);
+    if(!targetSession){
+      targetSession = { id:uid(), classId:toCid, date:oldSession.date, seq:oldSeq, records:{} };
+      DB.sessions.push(targetSession);
+    }
+    targetSession.records[sid] = rec;
+  });
+
+  return student;
+}
+
+function nextSeqForDate(classId, date){
+  const existing = getSessionsForDate(classId, date);
+  if(existing.length === 0) return 1;
+  return Math.max(...existing.map(s=>s.seq||1)) + 1;
+}
+
+function renderSession(classId, date, seq){
+  const c = DB.classes.find(x=>x.id===classId);
+  if(!c){ nav({screen:'home'}); return ''; }
+  const session = getOrCreateSession(classId, date, seq);
+
+  const presentCount = Object.values(session.records).filter(r=>r.status!=='absent').length;
+  const absentCount = Object.values(session.records).filter(r=>r.status==='absent').length;
+  const lateCount = Object.values(session.records).filter(r=>r.late===true).length;
+
+  const rows = sortedStudents(c).map((s,idx)=>{
+    const rec = session.records[s.id] || {};
+    const isPresent = rec.status !== 'absent'; // default present unless explicitly marked absent
+    const isLate = rec.late === true; // default false
+    const hw = rec.hw || null;
+    const note = rec.note || '';
+    const hasBook = rec.hasBook !== false; // default true unless explicitly set false
+    const hasNotebook = rec.hasNotebook !== false; // default true unless explicitly set false
+    const isFocused = rec.isFocused !== false; // default true unless explicitly set false
+    const expanded = route.expandedStudent === s.id;
+
+    const hwIcon = hw==='yes' ? '✓' : hw==='no' ? '✕' : '';
+    const hwClass = hw==='yes' ? 'on-yes' : hw==='no' ? 'on-no' : '';
+
+    const isPicked = route.pickedStudent === s.id;
+    return `
+    <div class="student-row ${isPicked?'picked-flash':''}" id="srow-${s.id}">
+      <div class="student-top">
+        <div class="student-avatar tabular">${idx+1}</div>
+        <div class="student-name">${esc(s.name)}</div>
+        <div class="status-chips">
+          <div class="chip ${isLate?'active-late':''}" data-action="toggleLate" data-sid="${s.id}" title="متأخر">⏱</div>
+          <div class="chip ${isPresent?'active-present':'active-absent'}" data-action="toggleAttendance" data-sid="${s.id}" title="${isPresent?'حاضر':'غائب'}">${isPresent?'✓':'غ'}</div>
+        </div>
+      </div>
+      <div class="tool-toggle tool-toggle-fixed">
+        <div class="tool-check ${hasBook?'on':'off'}" data-action="toggleBook" data-sid="${s.id}">
+          <span class="tool-icon">${hasBook?'✓':'✕'}</span>
+          <span class="tool-label">كتاب</span>
+        </div>
+        <div class="tool-check ${hasNotebook?'on':'off'}" data-action="toggleNotebook" data-sid="${s.id}">
+          <span class="tool-icon">${hasNotebook?'✓':'✕'}</span>
+          <span class="tool-label">دفتر</span>
+        </div>
+        <div class="tool-check ${isFocused?'on':'off'}" data-action="toggleFocus" data-sid="${s.id}">
+          <span class="tool-icon">${isFocused?'✓':'✕'}</span>
+          <span class="tool-label">تركيز</span>
+        </div>
+      </div>
+      <div class="expand-toggle" data-action="toggleExpand" data-sid="${s.id}">${expanded?'إخفاء التفاصيل ▲':'ملاحظة / واجب ▼'}</div>
+      <div class="student-extra ${expanded?'show':''}">
+        <div class="extra-row">
+          <div class="extra-label">الواجب</div>
+          <div class="hw-toggle">
+            <div class="hw-box ${hwClass}" data-action="setHw" data-sid="${s.id}">${hwIcon}</div>
+          </div>
+        </div>
+        <div class="extra-row" style="align-items:flex-start;">
+          <div class="extra-label" style="margin-top:8px;">ملاحظة</div>
+          <input class="note-input" placeholder="اكتب ملاحظة عن الطالب..." value="${esc(note)}" data-action="setNote" data-sid="${s.id}">
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const sessionsToday = getSessionsForDate(classId, date);
+  const sessionLabel = sessionsToday.length > 1 ? ` · الحصة ${session.seq||1}` : '';
+
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="icon-btn" data-action="backToClass" data-id="${classId}">→</button>
+        <div style="text-align:center; flex:1;">
+          <div class="topbar-title">${esc(c.name)}</div>
+          <div class="topbar-sub">${fmtFull(date)}${sessionLabel}</div>
+        </div>
+        <div style="width:38px"></div>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num tabular" style="color:var(--green)">${presentCount}</div><div class="stat-lbl">حاضر</div></div>
+        <div class="stat-box"><div class="stat-num tabular" style="color:var(--red)">${absentCount}</div><div class="stat-lbl">غائب</div></div>
+      </div>
+      <div class="section-label">الطلاب</div>
+      ${rows}
+      <div style="height:90px"></div>
+    </div>
+    <button class="btn btn-primary fab" id="randomPickBtn" data-action="pickRandomStudent" data-id="${classId}">🎯 عين الحظ</button>
+    ${bottomNav('')}
+  `;
+}
+
+/* ===================== STUDENT PROFILE ===================== */
+function renderStudentProfile(classId, studentId){
+  const c = DB.classes.find(x=>x.id===classId);
+  const s = c?.students.find(x=>x.id===studentId);
+  if(!c || !s){ nav({screen:'home'}); return ''; }
+
+  const allRecords = DB.sessions
+    .filter(x=>x.classId===classId && x.records[studentId])
+    .sort((a,b)=>{
+      const cmp = b.date.localeCompare(a.date);
+      if(cmp !== 0) return cmp;
+      return (b.seq||1)-(a.seq||1);
+    });
+
+  const presentN = allRecords.filter(r=>r.records[studentId].status!=='absent').length;
+  const absentN = allRecords.filter(r=>r.records[studentId].status==='absent').length;
+  const lateN = allRecords.filter(r=>r.records[studentId].late===true).length;
+
+  const list = allRecords.length === 0 ? `
+    <div class="empty">
+      <div class="empty-icon">📝</div>
+      <div class="empty-title">لا يوجد سجل بعد</div>
+      <div class="empty-text">سيظهر هنا تاريخ حضور الطالب وملاحظاته</div>
+    </div>` : allRecords.map(r=>{
+    const rec = r.records[studentId];
+    const {day,month} = fmtDate(r.date);
+    const isAbsent = rec.status==='absent';
+    const isLate = rec.late===true;
+    const statusTxt = isAbsent ? 'غائب' : (isLate ? 'حاضر · متأخر' : 'حاضر');
+    const statusColor = isAbsent ? 'var(--red)' : (isLate ? 'var(--gold)' : 'var(--green)');
+    const hwTxt = rec.hw==='yes'?' · سلّم الواجب':rec.hw==='no'?' · لم يسلّم الواجب':'';
+    return `
+    <div class="history-list-item">
+      <div class="history-date">
+        <div class="d tabular">${day}</div>
+        <div class="m">${month}</div>
+      </div>
+      <div class="history-body">
+        <div class="history-status" style="color:${statusColor}">${statusTxt}${hwTxt}</div>
+        ${rec.note ? `<div class="history-note">${esc(rec.note)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="icon-btn" data-action="backToClass" data-id="${classId}">→</button>
+        <div style="text-align:center; flex:1;">
+          <div class="topbar-title">${esc(s.name)}</div>
+          <div class="topbar-sub">${esc(c.name)}</div>
+        </div>
+        <button class="icon-btn" data-action="studentMenu" data-cid="${classId}" data-sid="${studentId}">⋮</button>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num tabular" style="color:var(--green)">${presentN}</div><div class="stat-lbl">أيام حضور</div></div>
+        <div class="stat-box"><div class="stat-num tabular" style="color:var(--red)">${absentN}</div><div class="stat-lbl">أيام غياب</div></div>
+        <div class="stat-box"><div class="stat-num tabular" style="color:var(--gold)">${lateN}</div><div class="stat-lbl">مرات تأخير</div></div>
+      </div>
+      <div class="section-label">السجل الكامل</div>
+      ${list}
+      <div style="height:30px"></div>
+    </div>
+    ${bottomNav('')}
+  `;
+}
+
+/* ===================== CLASS HISTORY (list of sessions) ===================== */
+function renderClassHistory(classId){
+  const c = DB.classes.find(x=>x.id===classId);
+  if(!c){ nav({screen:'home'}); return ''; }
+  const sessions = DB.sessions.filter(s=>s.classId===classId).sort((a,b)=>{
+    const cmp = b.date.localeCompare(a.date);
+    if(cmp !== 0) return cmp;
+    return (a.seq||1)-(b.seq||1);
+  });
+
+  // count sessions per date so we know whether to show a "session 2" style label
+  const countByDate = {};
+  sessions.forEach(s=>{ countByDate[s.date] = (countByDate[s.date]||0)+1; });
+
+  const list = sessions.length===0 ? `
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <div class="empty-title">لا توجد حصص مسجلة</div>
+    </div>` : sessions.map(s=>{
+    const {day,month} = fmtDate(s.date);
+    const recs = Object.values(s.records);
+    const present = recs.filter(r=>r.status!=='absent').length;
+    const absent = recs.filter(r=>r.status==='absent').length;
+    const label = countByDate[s.date] > 1 ? ` (الحصة ${s.seq||1})` : '';
+    return `
+    <div class="history-list-item" data-action="openSessionDate" data-id="${classId}" data-date="${s.date}" data-seq="${s.seq||1}">
+      <div class="history-date">
+        <div class="d tabular">${day}</div>
+        <div class="m">${month}</div>
+      </div>
+      <div class="history-body">
+        <div class="history-status">${fmtFull(s.date)}${label}</div>
+        <div class="history-note">${present} حاضر · ${absent} غائب</div>
+      </div>
+      <div class="class-arrow">‹</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <button class="icon-btn" data-action="backToClass" data-id="${classId}">→</button>
+        <div style="text-align:center; flex:1;">
+          <div class="topbar-title">سجل الحصص</div>
+          <div class="topbar-sub">${esc(c.name)}</div>
+        </div>
+        <div style="width:38px"></div>
+      </div>
+    </div>
+    <div class="screen">${list}<div style="height:30px"></div></div>
+    ${bottomNav('')}
+  `;
+}
+
+/* ===================== SETTINGS ===================== */
+function renderSettings(){
+  const currentTheme = loadTheme();
+  return `
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <div class="topbar-title">الإعدادات</div>
+          <div class="topbar-sub">النسخ الاحتياطي والمظهر</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="section-label">النسخ الاحتياطي</div>
+      <div class="card">
+        <button class="btn btn-primary btn-block" style="margin-bottom:10px;" data-action="exportAll">⇩ تصدير سجل (نسخة احتياطية)</button>
+        <button class="btn btn-ghost btn-block" data-action="importBackup">⇧ استيراد سجل</button>
+        <div style="font-size:12px; color:#9a9384; margin-top:10px; line-height:1.7;">
+          التصدير ينزّل ملف يحتوي كل صفوفك وطلابك وسجلات الحصص. الاستيراد يستبدل البيانات الحالية بالكامل بالملف المختار.
+        </div>
+      </div>
+
+      <div class="section-label">لون الخلفية</div>
+      <div class="card">
+        <div class="theme-grid">
+          ${THEMES.map(t=>`
+            <div class="theme-option ${t.id===currentTheme?'sel':''}" data-action="pickTheme" data-theme="${t.id}">
+              <div class="theme-swatch" style="background:${t.swatch}; ${t.id==='dark'?'border:1px solid #444;':''}"></div>
+              <div class="theme-name">${t.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    ${bottomNav('settings')}
+  `;
+}
+
+/* ===================== HELPERS ===================== */
+function esc(str){
+  return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ===================== MODALS ===================== */
+function openSheet(html){
+  let ov = document.getElementById('overlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'overlay';
+    ov.className = 'overlay';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div class="sheet">${html}</div>`;
+  ov.onclick = (e)=>{ if(e.target===ov) closeSheet(); };
+  requestAnimationFrame(()=>ov.classList.add('show'));
+  attachHandlers();
+}
+function closeSheet(){
+  const ov = document.getElementById('overlay');
+  if(ov) ov.classList.remove('show');
+}
+
+function sheetSearchStudents(query){
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">البحث عن طالب</div>
+    <div class="search-box">
+      <span>🔍</span>
+      <input id="inpSearchStudent" data-action="searchStudents" placeholder="اكتب اسم الطالب أو جزءًا منه" value="${esc(query||'')}" autofocus>
+    </div>
+    <div class="search-results" id="searchResultsBox">
+      ${renderSearchResults(query||'')}
+    </div>
+  `);
+  const inp = document.getElementById('inpSearchStudent');
+  if(inp){
+    inp.focus();
+    const len = inp.value.length;
+    inp.setSelectionRange(len, len);
+  }
+}
+
+function renderSearchResults(query){
+  const q = (query||'').trim().toLowerCase();
+  if(!q) return `<div class="search-empty">ابدأ الكتابة للبحث عن طالب</div>`;
+
+  const matches = [];
+  DB.classes.forEach(c=>{
+    c.students.forEach(s=>{
+      if(s.name.toLowerCase().includes(q)){
+        matches.push({ student:s, cls:c });
+      }
+    });
+  });
+
+  if(matches.length===0) return `<div class="search-empty">لا توجد نتائج لـ "${esc(query)}"</div>`;
+
+  return matches.map(m=>`
+    <div class="search-result-row" data-action="goToSearchResult" data-cid="${m.cls.id}" data-sid="${m.student.id}">
+      <div class="student-avatar tabular" style="background:${m.cls.color}; color:#fff;">${esc(initials(m.cls.name))}</div>
+      <div class="search-result-name">${esc(m.student.name)}</div>
+      <div class="search-result-class">${esc(m.cls.name)}</div>
+    </div>
+  `).join('');
+}
+
+function sheetNewClass(){
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">صف جديد</div>
+    <div class="field">
+      <label>اسم الصف</label>
+      <input id="inpClassName" placeholder="مثال: الصف السابع - أ" autofocus>
+    </div>
+    <div class="field">
+      <label>لون الصف</label>
+      <div class="swatch-row" id="colorRow">
+        ${COLORS.map((col,i)=>`<div class="swatch ${i===0?'sel':''}" style="background:${col}" data-color="${col}"></div>`).join('')}
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" data-action="saveNewClass">حفظ الصف</button>
+  `);
+}
+
+function sheetAddStudent(classId){
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">إضافة طالب</div>
+    <div class="field">
+      <label>اسم الطالب</label>
+      <input id="inpStudentName" placeholder="الاسم الكامل" autofocus>
+    </div>
+    <button class="btn btn-primary btn-block" data-action="saveNewStudent" data-id="${classId}">إضافة</button>
+    <div style="font-size:12px; color:#9a9384; text-align:center; margin:12px 0;">يمكنك إضافة عدة طلاب متتالية</div>
+    <div style="display:flex; align-items:center; gap:10px; margin:14px 0;">
+      <div style="flex:1; height:1px; background:var(--line)"></div>
+      <span style="font-size:12px; color:#9a9384;">أو</span>
+      <div style="flex:1; height:1px; background:var(--line)"></div>
+    </div>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:8px;" data-action="triggerImport" data-id="${classId}">⇧ استيراد قائمة من ملف Excel / CSV</button>
+    <button class="btn btn-ghost btn-block" data-action="triggerImageImport" data-id="${classId}">📷 استيراد قائمة من صورة (يحتاج انترنت أول مرة)</button>
+  `);
+}
+
+function sheetClassMenu(classId){
+  const c = DB.classes.find(x=>x.id===classId);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">${esc(c.name)}</div>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:10px" data-action="renameClass" data-id="${classId}">✏️ تعديل اسم الصف ولونه</button>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:10px" data-action="addStudent" data-id="${classId}">+ إضافة طالب</button>
+    <button class="btn btn-danger btn-block" data-action="deleteClass" data-id="${classId}">🗑 حذف الصف نهائياً</button>
+  `);
+}
+
+function sheetEditClass(classId){
+  const c = DB.classes.find(x=>x.id===classId);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">تعديل الصف</div>
+    <div class="field">
+      <label>اسم الصف</label>
+      <input id="inpEditClassName" value="${esc(c.name)}" autofocus>
+    </div>
+    <div class="field">
+      <label>لون الصف</label>
+      <div class="swatch-row" id="colorRow">
+        ${COLORS.map(col=>`<div class="swatch ${col===c.color?'sel':''}" style="background:${col}" data-color="${col}"></div>`).join('')}
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" data-action="saveEditClass" data-id="${classId}">حفظ التعديلات</button>
+  `);
+}
+
+function sheetStudentMenu(classId, studentId){
+  const c = DB.classes.find(x=>x.id===classId);
+  const s = c.students.find(x=>x.id===studentId);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">${esc(s.name)}</div>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:10px" data-action="renameStudent" data-cid="${classId}" data-sid="${studentId}">✏️ تعديل الاسم</button>
+    <button class="btn btn-ghost btn-block" style="margin-bottom:10px" data-action="openTransfer" data-cid="${classId}" data-sid="${studentId}">↔️ نقل إلى صف آخر</button>
+    <button class="btn btn-danger btn-block" data-action="deleteStudent" data-cid="${classId}" data-sid="${studentId}">🗑 حذف الطالب من الصف</button>
+  `);
+}
+
+function sheetTransferStudent(classId, studentId){
+  const c = DB.classes.find(x=>x.id===classId);
+  const s = c.students.find(x=>x.id===studentId);
+  const otherClasses = DB.classes.filter(x=>x.id!==classId);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">نقل ${esc(s.name)}</div>
+    <div style="font-size:13px; color:#8a8378; margin-bottom:14px; line-height:1.7;">
+      سينتقل الطالب مع كل سجله (الحضور والملاحظات والتقييمات) إلى الصف الجديد.
+    </div>
+    ${otherClasses.length === 0 ? `
+      <div class="empty" style="padding:20px;">
+        <div class="empty-text">لا يوجد صف آخر للنقل إليه</div>
+      </div>` : otherClasses.map(oc=>`
+      <button class="btn btn-ghost btn-block" style="margin-bottom:8px; justify-content:flex-start;" data-action="confirmTransfer" data-cid="${classId}" data-sid="${studentId}" data-target="${oc.id}">
+        <span style="width:10px; height:10px; border-radius:50%; background:${oc.color}; display:inline-block; margin-left:8px;"></span>
+        ${esc(oc.name)}
+      </button>`).join('')}
+  `);
+}
+
+function sheetBulkTransfer(classId, ids){
+  const c = DB.classes.find(x=>x.id===classId);
+  const count = ids.length;
+  const otherClasses = DB.classes.filter(x=>x.id!==classId);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">نقل ${count} طالب</div>
+    <div style="font-size:13px; color:#8a8378; margin-bottom:14px; line-height:1.7;">
+      سينتقل الطلاب المحددون مع كل سجلهم (الحضور والملاحظات والتقييمات) إلى الصف الجديد.
+    </div>
+    ${otherClasses.length === 0 ? `
+      <div class="empty" style="padding:20px;">
+        <div class="empty-text">لا يوجد صف آخر للنقل إليه</div>
+      </div>` : otherClasses.map(oc=>`
+      <button class="btn btn-ghost btn-block" style="margin-bottom:8px; justify-content:flex-start;" data-action="confirmBulkTransfer" data-cid="${classId}" data-target="${oc.id}">
+        <span style="width:10px; height:10px; border-radius:50%; background:${oc.color}; display:inline-block; margin-left:8px;"></span>
+        ${esc(oc.name)}
+      </button>`).join('')}
+  `);
+}
+
+
+let importState = null; // { classId, rows: [[..],[..]], colCount }
+
+function sheetColumnPicker(classId, rows){
+  const colCount = Math.max(1, ...rows.map(r=>r.length));
+  if(colCount <= 1){
+    return showImportPreview(classId, rows, 0, false);
+  }
+  const sampleRow = rows.find(r=>r.some(c=>c && c.trim())) || rows[0] || [];
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">أي عمود فيه أسماء الطلاب؟</div>
+    <div style="font-size:13px; color:#8a8378; margin-bottom:14px;">الملف يحتوي على ${colCount} أعمدة. اختر العمود الذي يحتوي على الاسم الكامل.</div>
+    ${Array.from({length:colCount}).map((_,i)=>`
+      <button class="btn btn-ghost btn-block" style="margin-bottom:8px; justify-content:flex-start; text-align:right;" data-action="pickColumn" data-id="${classId}" data-col="${i}">
+        عمود ${i+1}${sampleRow[i]?' — مثال: «'+esc(String(sampleRow[i]).slice(0,28))+'»':''}
+      </button>
+    `).join('')}
+  `);
+  importState = { classId, rows };
+}
+
+function showImportPreview(classId, rows, colIndex, hasHeaderGuessDone){
+  // extract names from chosen column, trim, drop empty
+  let names = rows.map(r => (r[colIndex]||'').toString().trim()).filter(Boolean);
+
+  // guess + auto-skip a header row (e.g. "اسم الطالب", "Name", "الاسم")
+  let skippedHeader = false;
+  if(names.length > 1){
+    const first = names[0].toLowerCase();
+    const headerWords = ['اسم','الاسم','name','الطالب','student'];
+    if(headerWords.some(w=>first.includes(w)) && first.length < 30){
+      names = names.slice(1);
+      skippedHeader = true;
+    }
+  }
+
+  const c = DB.classes.find(x=>x.id===classId);
+  const existingNames = new Set(c.students.map(s=>s.name.trim()));
+  const newNames = names.filter(n=>!existingNames.has(n));
+  const dupCount = names.length - newNames.length;
+
+  importState = { classId, names: newNames, skippedHeader, originalCount: names.length, dupCount };
+  renderImportPreviewSheet();
+}
+
+function renderImportPreviewSheet(){
+  const { names, skippedHeader, originalCount, dupCount } = importState;
+
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">معاينة الاستيراد</div>
+    <div style="font-size:13px; color:var(--slate); margin-bottom:10px; line-height:1.7;">
+      تم العثور على <b>${originalCount}</b> اسم${skippedHeader ? ' (تم تجاوز صف العنوان تلقائياً)' : ''}.
+      ${dupCount > 0 ? `<br><span style="color:var(--gold)">${dupCount} اسم موجود مسبقاً بالصف وسيتم تجاهله.</span>` : ''}
+      ${names.length > 0 ? '<br><span style="color:#9a9384;">يمكنك تعديل أي اسم أو حذفه قبل الإضافة.</span>' : ''}
+    </div>
+    <div style="max-height:320px; overflow-y:auto; margin-bottom:16px;">
+      ${names.length === 0 ? '<div style="text-align:center; color:#9a9384; padding:14px 0;">لا يوجد أسماء جديدة لإضافتها</div>' :
+        names.map((n,i)=>`
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <input class="note-input" style="flex:1;" value="${esc(n)}" data-action="editImportName" data-idx="${i}">
+          <button class="icon-btn" style="background:#fbe9e7; color:var(--red); width:34px; height:34px; flex-shrink:0;" data-action="removeImportName" data-idx="${i}">✕</button>
+        </div>`).join('')}
+    </div>
+    ${names.length > 0 ? `<button class="btn btn-primary btn-block" data-action="confirmImport">إضافة ${names.length} طالب للصف</button>` : `<button class="btn btn-ghost btn-block" data-action="closeSheetBtn">إغلاق</button>`}
+  `);
+}
+
+function parseCsvText(text){
+  // simple CSV/TSV/plain-list parser: supports comma or tab separated, or one name per line
+  const lines = text.split(/\r\n|\r|\n/).filter(l => l.length > 0);
+  if(lines.length === 0) return [];
+  const delim = lines[0].includes('\t') ? '\t' : (lines[0].includes(',') ? ',' : null);
+  if(!delim) return lines.map(l => [l.trim()]);
+  return lines.map(l => l.split(delim).map(c => c.trim().replace(/^"|"$/g,'')));
+}
+
+/* ---- Minimal XLSX reading: ZIP (via DecompressionStream) + OOXML XML parsing ---- */
+async function readZipEntries(arrayBuffer){
+  const buf = new Uint8Array(arrayBuffer);
+  const dv = new DataView(arrayBuffer);
+  let eocdOffset = -1;
+  for (let i = buf.length - 22; i >= 0; i--){
+    if (dv.getUint32(i, true) === 0x06054b50) { eocdOffset = i; break; }
+  }
+  if (eocdOffset === -1) throw new Error('ملف غير صالح');
+  const entryCount = dv.getUint16(eocdOffset + 10, true);
+  const cdOffset = dv.getUint32(eocdOffset + 16, true);
+
+  const entries = {};
+  let ptr = cdOffset;
+  for (let i = 0; i < entryCount; i++){
+    const sig = dv.getUint32(ptr, true);
+    if (sig !== 0x02014b50) break;
+    const compMethod = dv.getUint16(ptr + 10, true);
+    const compSize = dv.getUint32(ptr + 20, true);
+    const nameLen = dv.getUint16(ptr + 28, true);
+    const extraLen = dv.getUint16(ptr + 30, true);
+    const commentLen = dv.getUint16(ptr + 32, true);
+    const localHeaderOffset = dv.getUint32(ptr + 42, true);
+    const nameBytes = buf.slice(ptr + 46, ptr + 46 + nameLen);
+    const name = new TextDecoder('utf-8').decode(nameBytes);
+    entries[name] = { compMethod, compSize, localHeaderOffset };
+    ptr += 46 + nameLen + extraLen + commentLen;
+  }
+
+  const result = {};
+  for (const name in entries){
+    const e = entries[name];
+    const lh = e.localHeaderOffset;
+    if (dv.getUint32(lh, true) !== 0x04034b50) continue;
+    const lhNameLen = dv.getUint16(lh + 26, true);
+    const lhExtraLen = dv.getUint16(lh + 28, true);
+    const dataStart = lh + 30 + lhNameLen + lhExtraLen;
+    const compData = buf.slice(dataStart, dataStart + e.compSize);
+    let outBytes;
+    if (e.compMethod === 0){
+      outBytes = compData;
+    } else if (e.compMethod === 8){
+      const ds = new DecompressionStream('deflate-raw');
+      const stream = new Blob([compData]).stream().pipeThrough(ds);
+      outBytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    } else continue;
+    result[name] = outBytes;
+  }
+  return result;
+}
+
+function xmlUnescape(s){
+  return s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'")
+          .replace(/&#(\d+);/g,(m,d)=>String.fromCodePoint(parseInt(d,10)))
+          .replace(/&#x([0-9a-fA-F]+);/g,(m,h)=>String.fromCodePoint(parseInt(h,16)))
+          .replace(/&amp;/g,'&');
+}
+function parseSharedStrings(xml){
+  if(!xml) return [];
+  const strings = [];
+  const siRe = /<si[^>]*>([\s\S]*?)<\/si>/g;
+  let m;
+  while ((m = siRe.exec(xml))){
+    const tRe = /<t[^>]*>([\s\S]*?)<\/t>/g;
+    let t, combined = '';
+    while ((t = tRe.exec(m[1]))) combined += t[1];
+    strings.push(xmlUnescape(combined));
+  }
+  return strings;
+}
+function colToIndex(col){
+  let n = 0;
+  for (let i=0;i<col.length;i++) n = n*26 + (col.charCodeAt(i)-64);
+  return n-1;
+}
+function parseSheetXml(xml, sharedStrings){
+  const rows = [];
+  const rowRe = /<row[^>]*>([\s\S]*?)<\/row>/g;
+  let rm;
+  while ((rm = rowRe.exec(xml))){
+    const cellRe = /<c\s+([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;
+    let cm;
+    const rowArr = [];
+    while ((cm = cellRe.exec(rm[1]))){
+      const attrs = cm[1], inner = cm[2] || '';
+      const refMatch = attrs.match(/r="([A-Z]+)\d+"/);
+      const typeMatch = attrs.match(/t="([^"]+)"/);
+      const col = refMatch ? colToIndex(refMatch[1]) : rowArr.length;
+      const type = typeMatch ? typeMatch[1] : 'n';
+      let value = '';
+      if (type === 's'){
+        const vMatch = inner.match(/<v>([\s\S]*?)<\/v>/);
+        if (vMatch) value = sharedStrings[parseInt(vMatch[1],10)] || '';
+      } else if (type === 'inlineStr'){
+        const tMatch = inner.match(/<t[^>]*>([\s\S]*?)<\/t>/);
+        value = tMatch ? xmlUnescape(tMatch[1]) : '';
+      } else {
+        const vMatch = inner.match(/<v>([\s\S]*?)<\/v>/);
+        value = vMatch ? xmlUnescape(vMatch[1]) : '';
+      }
+      while(rowArr.length < col) rowArr.push('');
+      rowArr[col] = value;
+    }
+    rows.push(rowArr);
+  }
+  return rows;
+}
+async function parseXlsxFile(arrayBuffer){
+  const files = await readZipEntries(arrayBuffer);
+  const dec = new TextDecoder('utf-8');
+  let sheetXmlName = 'xl/worksheets/sheet1.xml';
+  const wbXml = files['xl/workbook.xml'] ? dec.decode(files['xl/workbook.xml']) : '';
+  const relsXml = files['xl/_rels/workbook.xml.rels'] ? dec.decode(files['xl/_rels/workbook.xml.rels']) : '';
+  const firstSheetMatch = wbXml.match(/<sheet[^>]*r:id="([^"]+)"[^>]*\/?>/);
+  if (firstSheetMatch && relsXml){
+    const rid = firstSheetMatch[1];
+    const relRe = new RegExp('<Relationship[^>]*Id="'+rid+'"[^>]*Target="([^"]+)"');
+    const relMatch = relsXml.match(relRe);
+    if (relMatch) sheetXmlName = 'xl/' + relMatch[1].replace(/^\//,'');
+  }
+  const sharedStringsXml = files['xl/sharedStrings.xml'] ? dec.decode(files['xl/sharedStrings.xml']) : '';
+  const sharedStrings = parseSharedStrings(sharedStringsXml);
+  const sheetXml = files[sheetXmlName] ? dec.decode(files[sheetXmlName]) : '';
+  if(!sheetXml) throw new Error('لم يتم العثور على ورقة بيانات في الملف');
+  return parseSheetXml(sheetXml, sharedStrings);
+}
+
+async function handleImportFile(file, classId){
+  try{
+    const ext = file.name.split('.').pop().toLowerCase();
+    let rows;
+    if (ext === 'xlsx'){
+      const buf = await file.arrayBuffer();
+      rows = await parseXlsxFile(buf);
+    } else {
+      const text = await file.text();
+      rows = parseCsvText(text);
+    }
+    rows = rows.filter(r => r && r.some(c => c && c.toString().trim()));
+    if (rows.length === 0){ showToast('الملف فاضي أو فيه مشكلة'); return; }
+    sheetColumnPicker(classId, rows);
+  }catch(err){
+    showToast('تعذّر قراءة الملف، تأكد إنه ملف Excel أو CSV صحيح');
+  }
+}
+
+function sheetImageLoading(statusText){
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">جاري قراءة الصورة...</div>
+    <div style="text-align:center; padding:30px 0;">
+      <div style="font-size:34px; margin-bottom:12px;">📷</div>
+      <div id="imgImportStatus" style="font-size:13px; color:#8a8378;">${statusText || 'يحضّر أداة القراءة...'}</div>
+    </div>
+  `);
+}
+function updateImageLoadingStatus(text){
+  const el = document.getElementById('imgImportStatus');
+  if(el) el.textContent = text;
+}
+
+/* shared Tesseract worker, created once and reused across imports */
+let tesseractWorker = null;
+async function getTesseractWorker(){
+  if(tesseractWorker) return tesseractWorker;
+  updateImageLoadingStatus('يحضّر أداة القراءة... (أول استخدام قد يحمّل بيانات إضافية)');
+  tesseractWorker = await Tesseract.createWorker('ara+eng', 1, {
+    logger: (m)=>{
+      if(m.status === 'recognizing text'){
+        const pct = Math.round((m.progress||0)*100);
+        updateImageLoadingStatus(`يستخرج النص... ${pct}%`);
+      } else if(m.status === 'loading tesseract core'){
+        updateImageLoadingStatus('يحمّل أداة القراءة...');
+      } else if(m.status === 'loading language traineddata' || m.status === 'loaded language traineddata'){
+        updateImageLoadingStatus('يحمّل بيانات اللغة العربية...');
+      } else if(m.status === 'initializing api'){
+        updateImageLoadingStatus('يهيّئ القراءة...');
+      }
+    }
+  });
+  return tesseractWorker;
+}
+
+function parseNamesFromOcrText(text){
+  // split into lines, trim, drop empties and pure-noise lines (single punctuation, page numbers, etc.)
+  return text
+    .split(/\r\n|\r|\n/)
+    .map(line => line.trim())
+    .filter(line => {
+      if(!line) return false;
+      if(line.length < 2) return false;
+      // drop lines that are just numbers/punctuation with no letters at all
+      if(!/[\u0600-\u06FFa-zA-Z]/.test(line)) return false;
+      return true;
+    })
+    // strip leading numbering like "1.", "1-", "1)" if present
+    .map(line => line.replace(/^\s*\d+[\.\)\-:]?\s*/, '').trim())
+    .filter(Boolean);
+}
+
+async function handleImageImport(file, classId){
+  if(!file.type.startsWith('image/')){
+    showToast('يرجى اختيار صورة صالحة');
+    return;
+  }
+  if(typeof Tesseract === 'undefined'){
+    showToast('تعذّر تحميل أداة القراءة، تحقق من الانترنت وحاول مجدداً');
+    return;
+  }
+
+  sheetImageLoading();
+  try{
+    const worker = await getTesseractWorker();
+    updateImageLoadingStatus('يستخرج النص من الصورة...');
+    const imageUrl = URL.createObjectURL(file);
+    const { data } = await worker.recognize(imageUrl);
+    URL.revokeObjectURL(imageUrl);
+
+    const rawText = (data && data.text) ? data.text : '';
+    const names = parseNamesFromOcrText(rawText);
+
+    if(names.length === 0){
+      closeSheet();
+      showToast('لم يتم العثور على نص واضح بالصورة، جرّب صورة أوضح');
+      return;
+    }
+
+    // route through the same column-less single-column preview flow used for file imports,
+    // so the teacher reviews/corrects names before they're added (OCR isn't perfect)
+    const rows = names.map(n=>[n]);
+    sheetColumnPicker(classId, rows);
+
+  }catch(err){
+    closeSheet();
+    console.error('Image import (Tesseract) failed:', err);
+    if(err instanceof TypeError){
+      showToast('تعذّر تحميل أداة القراءة، تحقق من الانترنت (مطلوب أول استخدام فقط)');
+    } else {
+      showToast('حدث خطأ غير متوقع أثناء قراءة الصورة، حاول مرة أخرى');
+    }
+  }
+}
+
+function sheetDateSession(classId){
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">بدء حصة بتاريخ آخر</div>
+    <div class="field">
+      <label>التاريخ</label>
+      <input type="date" id="inpSessionDate" value="${todayISO()}">
+    </div>
+    <button class="btn btn-primary btn-block" data-action="goSessionDate" data-id="${classId}">فتح الحصة</button>
+  `);
+}
+
+/* ===================== EVENT HANDLERS ===================== */
+function attachHandlers(){
+  document.querySelectorAll('[data-action]').forEach(el=>{
+    if(el._bound) return;
+    el._bound = true;
+    const action = el.getAttribute('data-action');
+
+    if(action === 'setNote'){
+      el.addEventListener('input', debounce((e)=>{
+        const sid = el.getAttribute('data-sid');
+        const s = getOrCreateSession(route.classId, route.date, route.seq);
+        s.records[sid] = s.records[sid] || {};
+        s.records[sid].note = e.target.value;
+        saveDB();
+      }, 300));
+      return;
+    }
+
+    if(action === 'searchStudents'){
+      el.addEventListener('input', debounce((e)=>{
+        const box = document.getElementById('searchResultsBox');
+        if(box) box.innerHTML = renderSearchResults(e.target.value);
+        attachHandlers();
+      }, 200));
+      return;
+    }
+
+    if(action === 'editImportName'){
+      el.addEventListener('input', (e)=>{
+        const idx = parseInt(el.getAttribute('data-idx'));
+        if(importState && importState.names) importState.names[idx] = e.target.value;
+      });
+      return;
+    }
+
+    el.addEventListener('click', (e)=>{
+      if(action === 'openReport' || action === 'openStudentReport'){ e.stopPropagation(); }
+      handleAction(action, el, e);
+    });
+
+    if(el.getAttribute('data-longpress') === 'studentRow'){
+      let lpTimer = null, fired = false;
+      const start = ()=>{
+        fired = false;
+        lpTimer = setTimeout(()=>{
+          fired = true;
+          enterSelectMode(el.getAttribute('data-id'));
+        }, 480);
+      };
+      const cancel = ()=> clearTimeout(lpTimer);
+      el.addEventListener('touchstart', start, {passive:true});
+      el.addEventListener('touchend', cancel);
+      el.addEventListener('touchmove', cancel);
+      el.addEventListener('mousedown', start);
+      el.addEventListener('mouseup', cancel);
+      el.addEventListener('mouseleave', cancel);
+      el.addEventListener('click', (e)=>{ if(fired){ e.stopPropagation(); e.preventDefault(); } }, true);
+    }
+  });
+
+  // swatch picker inside sheet
+  document.querySelectorAll('.swatch').forEach(sw=>{
+    if(sw._bound) return;
+    sw._bound = true;
+    sw.addEventListener('click', ()=>{
+      document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('sel'));
+      sw.classList.add('sel');
+    });
+  });
+}
+
+let debTimer;
+function debounce(fn, ms){
+  return (...args)=>{ clearTimeout(debTimer); debTimer = setTimeout(()=>fn(...args), ms); };
+}
+
+function handleAction(action, el, e){
+  switch(action){
+    case 'goHome': nav({screen:'home'}); break;
+    case 'goSettings': nav({screen:'settings'}); break;
+    case 'openSearch': sheetSearchStudents(''); break;
+    case 'pickRandomStudent': {
+      const cid = el.getAttribute('data-id');
+      const c = DB.classes.find(x=>x.id===cid);
+      if(!c || c.students.length===0){ showToast('لا يوجد طلاب في هذا الصف'); break; }
+
+      // refill pool if empty/missing/out of sync with current roster
+      const currentIds = c.students.map(s=>s.id);
+      if(!c.randomPickPool || c.randomPickPool.length===0){
+        c.randomPickPool = shuffleArray(currentIds);
+      } else {
+        // drop ids of students no longer in the class (e.g. removed/transferred)
+        c.randomPickPool = c.randomPickPool.filter(id=>currentIds.includes(id));
+        if(c.randomPickPool.length===0) c.randomPickPool = shuffleArray(currentIds);
+      }
+
+      const pickedId = c.randomPickPool.shift();
+      saveDB();
+
+      const pickedStudent = c.students.find(s=>s.id===pickedId);
+      route.pickedStudent = pickedId;
+      render();
+      const rowEl = document.getElementById('srow-'+pickedId);
+      if(rowEl) rowEl.scrollIntoView({behavior:'smooth', block:'center'});
+      if(navigator.vibrate) navigator.vibrate(15);
+      if(pickedStudent) showToast(`🎯 ${pickedStudent.name}`);
+      setTimeout(()=>{ route.pickedStudent = null; }, 1800);
+      break;
+    }
+    case 'goToSearchResult': {
+      closeSheet();
+      const cid = el.getAttribute('data-cid');
+      const sid = el.getAttribute('data-sid');
+      nav({screen:'classStudents', classId:cid});
+      route.pickedStudent = sid;
+      render();
+      const rowEl = document.getElementById('srow-'+sid);
+      if(rowEl) rowEl.scrollIntoView({behavior:'smooth', block:'center'});
+      setTimeout(()=>{ route.pickedStudent = null; }, 1800);
+      break;
+    }
+    case 'openReport': generateClassReport(el.getAttribute('data-id')); break;
+    case 'openStudentReport': generateStudentReport(el.getAttribute('data-cid'), el.getAttribute('data-sid')); break;
+    case 'pickTheme': {
+      const themeId = el.getAttribute('data-theme');
+      saveTheme(themeId);
+      render();
+      showToast('تم تغيير لون الخلفية');
+      break;
+    }
+
+    case 'newClass': sheetNewClass(); break;
+    case 'saveNewClass': {
+      const name = document.getElementById('inpClassName').value.trim();
+      if(!name){ showToast('اكتب اسم الصف'); return; }
+      const sel = document.querySelector('.swatch.sel');
+      const color = sel ? sel.getAttribute('data-color') : COLORS[0];
+      DB.classes.push({ id:uid(), name, color, students:[] });
+      saveDB(); closeSheet(); render();
+      showToast('تمت إضافة الصف');
+      break;
+    }
+
+    case 'openClass': nav({screen:'classStudents', classId:el.getAttribute('data-id')}); break;
+    case 'classMenu': sheetClassMenu(el.getAttribute('data-id')); break;
+    case 'renameClass': sheetEditClass(el.getAttribute('data-id')); break;
+    case 'saveEditClass': {
+      const c = DB.classes.find(x=>x.id===el.getAttribute('data-id'));
+      const nm = document.getElementById('inpEditClassName').value.trim();
+      if(!nm){ showToast('اكتب اسم الصف'); return; }
+      const sel = document.querySelector('.swatch.sel');
+      if(sel) c.color = sel.getAttribute('data-color');
+      c.name = nm;
+      saveDB(); closeSheet(); render();
+      showToast('تم حفظ التعديلات');
+      break;
+    }
+    case 'deleteClass': {
+      if(confirm('حذف هذا الصف وكل بياناته نهائياً؟')){
+        const id = el.getAttribute('data-id');
+        DB.classes = DB.classes.filter(c=>c.id!==id);
+        DB.sessions = DB.sessions.filter(s=>s.classId!==id);
+        saveDB(); closeSheet(); nav({screen:'home'});
+        showToast('تم حذف الصف');
+      }
+      break;
+    }
+
+    case 'addStudent': sheetAddStudent(el.getAttribute('data-id')); break;
+    case 'saveNewStudent': {
+      const name = document.getElementById('inpStudentName').value.trim();
+      if(!name){ showToast('اكتب اسم الطالب'); return; }
+      const c = DB.classes.find(x=>x.id===el.getAttribute('data-id'));
+      c.students.push({ id:uid(), name });
+      saveDB();
+      document.getElementById('inpStudentName').value='';
+      document.getElementById('inpStudentName').focus();
+      render(); 
+      // reopen sheet for fast multi-add
+      sheetAddStudent(el.getAttribute('data-id'));
+      showToast('تمت الإضافة');
+      break;
+    }
+
+    case 'openProfile': nav({screen:'studentProfile', classId:route.classId, studentId:el.getAttribute('data-id')}); break;
+    case 'studentMenu': sheetStudentMenu(el.getAttribute('data-cid'), el.getAttribute('data-sid')); break;
+    case 'renameStudent': {
+      const c = DB.classes.find(x=>x.id===el.getAttribute('data-cid'));
+      const s = c.students.find(x=>x.id===el.getAttribute('data-sid'));
+      const nm = prompt('اسم الطالب الجديد', s.name);
+      if(nm && nm.trim()){ s.name = nm.trim(); saveDB(); closeSheet(); render(); }
+      break;
+    }
+    case 'deleteStudent': {
+      if(confirm('حذف هذا الطالب وكل سجلاته؟')){
+        const cid = el.getAttribute('data-cid'), sid = el.getAttribute('data-sid');
+        const c = DB.classes.find(x=>x.id===cid);
+        c.students = c.students.filter(s=>s.id!==sid);
+        DB.sessions.forEach(s=>{ if(s.classId===cid) delete s.records[sid]; });
+        saveDB(); closeSheet(); nav({screen:'classStudents', classId:cid});
+        showToast('تم حذف الطالب');
+      }
+      break;
+    }
+
+    case 'openTransfer': sheetTransferStudent(el.getAttribute('data-cid'), el.getAttribute('data-sid')); break;
+    case 'confirmTransfer': {
+      const fromCid = el.getAttribute('data-cid'), sid = el.getAttribute('data-sid'), toCid = el.getAttribute('data-target');
+      const toClass = DB.classes.find(x=>x.id===toCid);
+      const student = transferStudentRecord(fromCid, sid, toCid);
+      if(!student || !toClass) break;
+
+      saveDB(); closeSheet(); nav({screen:'classStudents', classId:toCid});
+      showToast(`تم نقل ${student.name} إلى ${toClass.name}`);
+      break;
+    }
+
+    case 'toggleSelectStudent': {
+      const sid = el.getAttribute('data-id');
+      route.selectedIds = route.selectedIds || new Set();
+      if(route.selectedIds.has(sid)) route.selectedIds.delete(sid);
+      else route.selectedIds.add(sid);
+      if(route.selectedIds.size === 0) route.selectMode = false;
+      render();
+      break;
+    }
+    case 'exitSelectMode': {
+      route.selectMode = false;
+      route.selectedIds = new Set();
+      render();
+      break;
+    }
+    case 'selectAllStudents': {
+      const c = DB.classes.find(x=>x.id===el.getAttribute('data-id'));
+      route.selectedIds = route.selectedIds || new Set();
+      const allSelected = c.students.length>0 && c.students.every(s=>route.selectedIds.has(s.id));
+      if(allSelected) route.selectedIds = new Set();
+      else route.selectedIds = new Set(c.students.map(s=>s.id));
+      render();
+      break;
+    }
+    case 'openBulkTransfer': {
+      const ids = Array.from(route.selectedIds || []);
+      if(ids.length === 0) break;
+      sheetBulkTransfer(el.getAttribute('data-id'), ids);
+      break;
+    }
+    case 'confirmBulkTransfer': {
+      const fromCid = el.getAttribute('data-cid'), toCid = el.getAttribute('data-target');
+      const toClass = DB.classes.find(x=>x.id===toCid);
+      const ids = Array.from(route.selectedIds || []);
+      if(!toClass || ids.length === 0) break;
+      if(!confirm(`نقل ${ids.length} طالب إلى "${toClass.name}"؟`)) break;
+      ids.forEach(sid=> transferStudentRecord(fromCid, sid, toCid) );
+      saveDB(); closeSheet();
+      route = { screen:'classStudents', classId:toCid, selectMode:false, selectedIds:new Set() };
+      render();
+      showToast(`تم نقل ${ids.length} طالب إلى ${toClass.name}`);
+      break;
+    }
+    case 'bulkDeleteStudents': {
+      const cid = el.getAttribute('data-id');
+      const ids = Array.from(route.selectedIds || []);
+      if(ids.length === 0) break;
+      if(!confirm(`حذف ${ids.length} طالب وكل سجلاتهم؟ لا يمكن التراجع عن هذا الإجراء.`)) break;
+      const c = DB.classes.find(x=>x.id===cid);
+      const idSet = new Set(ids);
+      c.students = c.students.filter(s=>!idSet.has(s.id));
+      DB.sessions.forEach(s=>{ if(s.classId===cid) ids.forEach(sid=> delete s.records[sid]); });
+      saveDB();
+      route = { screen:'classStudents', classId:cid, selectMode:false, selectedIds:new Set() };
+      render();
+      showToast(`تم حذف ${ids.length} طالب`);
+      break;
+    }
+
+    case 'startSession':
+      nav({screen:'session', classId:el.getAttribute('data-id'), date:todayISO(), seq:1});
+      break;
+    case 'openSession': {
+      const classId = el.getAttribute('data-id');
+      const today = todayISO();
+      const sessions = getSessionsForDate(classId, today);
+      const lastSeq = sessions.length > 0 ? Math.max(...sessions.map(s=>s.seq||1)) : 1;
+      nav({screen:'session', classId, date:today, seq:lastSeq});
+      break;
+    }
+    case 'newSession': {
+      const classId = el.getAttribute('data-id');
+      const today = todayISO();
+      const seq = nextSeqForDate(classId, today);
+      nav({screen:'session', classId, date:today, seq});
+      break;
+    }
+    case 'backToClass': nav({screen:'classStudents', classId:el.getAttribute('data-id')}); break;
+
+    case 'toggleAttendance': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const currentlyPresent = s.records[sid].status !== 'absent';
+      if(currentlyPresent){
+        // marking as absent: also clear "late" since an absent student can't be late
+        s.records[sid].status = 'absent';
+        s.records[sid].late = false;
+      } else {
+        s.records[sid].status = 'present';
+      }
+      saveDB(); render();
+      break;
+    }
+    case 'toggleLate': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const currentlyLate = s.records[sid].late === true;
+      s.records[sid].late = !currentlyLate;
+      // marking late implies the student is present
+      if(!currentlyLate){
+        s.records[sid].status = 'present';
+      }
+      saveDB(); render();
+      break;
+    }
+    case 'setHw': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const cur = s.records[sid].hw || null;
+      // cycle: empty -> yes (✓) -> no (✕) -> empty
+      s.records[sid].hw = cur === null ? 'yes' : (cur === 'yes' ? 'no' : null);
+      saveDB();
+      route.expandedStudent = sid;
+      render();
+      break;
+    }
+    case 'toggleBook': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const current = s.records[sid].hasBook !== false;
+      s.records[sid].hasBook = !current;
+      saveDB();
+      route.expandedStudent = sid;
+      render();
+      break;
+    }
+    case 'toggleNotebook': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const current = s.records[sid].hasNotebook !== false;
+      s.records[sid].hasNotebook = !current;
+      saveDB();
+      route.expandedStudent = sid;
+      render();
+      break;
+    }
+    case 'toggleFocus': {
+      const sid = el.getAttribute('data-sid');
+      const s = getOrCreateSession(route.classId, route.date, route.seq);
+      s.records[sid] = s.records[sid] || {};
+      const current = s.records[sid].isFocused !== false;
+      s.records[sid].isFocused = !current;
+      saveDB();
+      route.expandedStudent = sid;
+      render();
+      break;
+    }
+    case 'toggleExpand': {
+      const sid = el.getAttribute('data-sid');
+      route.expandedStudent = route.expandedStudent === sid ? null : sid;
+      render();
+      break;
+    }
+
+    case 'viewHistory': nav({screen:'history', classId:el.getAttribute('data-id')}); break;
+    case 'openSessionDate': nav({screen:'session', classId:el.getAttribute('data-id'), date:el.getAttribute('data-date'), seq:parseInt(el.getAttribute('data-seq'))||1}); break;
+
+    case 'exportAll': exportBackup(); break;
+    case 'importBackup': document.getElementById('fileImport').click(); break;
+
+    case 'triggerImport': {
+      const fi = document.getElementById('fileImportStudents');
+      fi.setAttribute('data-classid', el.getAttribute('data-id'));
+      fi.click();
+      break;
+    }
+    case 'triggerImageImport': {
+      const fi = document.getElementById('fileImportImage');
+      fi.setAttribute('data-classid', el.getAttribute('data-id'));
+      fi.click();
+      break;
+    }
+    case 'pickColumn': {
+      const col = parseInt(el.getAttribute('data-col'));
+      showImportPreview(el.getAttribute('data-id'), importState.rows, col);
+      break;
+    }
+    case 'removeImportName': {
+      const idx = parseInt(el.getAttribute('data-idx'));
+      importState.names.splice(idx, 1);
+      renderImportPreviewSheet();
+      break;
+    }
+    case 'confirmImport': {
+      const c = DB.classes.find(x=>x.id===importState.classId);
+      const finalNames = importState.names.map(n=>n.trim()).filter(Boolean);
+      finalNames.forEach(name => c.students.push({ id: uid(), name }));
+      saveDB();
+      const count = finalNames.length;
+      closeSheet();
+      render();
+      showToast(`تمت إضافة ${count} طالب`);
+      importState = null;
+      break;
+    }
+    case 'closeSheetBtn': closeSheet(); break;
+  }
+}
+
+/* ===================== BACKUP / RESTORE ===================== */
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `سجلي-نسخة-احتياطية-${todayISO()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  showToast('تم تنزيل النسخة الاحتياطية');
+}
+
+function generateClassReport(classId){
+  const c = DB.classes.find(x=>x.id===classId);
+  if(!c) return;
+
+  const sessions = DB.sessions
+    .filter(s=>s.classId===classId)
+    .sort((a,b)=>{
+      const cmp = a.date.localeCompare(b.date);
+      if(cmp !== 0) return cmp;
+      return (a.seq||1)-(b.seq||1);
+    });
+
+  const students = sortedStudents(c);
+
+  // build date-group headers; show "(2)" suffix when multiple sessions share a date
+  const countByDate = {};
+  sessions.forEach(s=>{ countByDate[s.date] = (countByDate[s.date]||0)+1; });
+  const seenSoFar = {};
+
+  const subCols = ['تأخر','كتاب','دفتر','تركيز','واجب'];
+
+  const dateHeaderCells = sessions.map(s=>{
+    seenSoFar[s.date] = (seenSoFar[s.date]||0)+1;
+    const {day,month} = fmtDate(s.date);
+    const label = countByDate[s.date] > 1 ? `${day} ${month} (${seenSoFar[s.date]})` : `${day} ${month}`;
+    return `<th colspan="5" class="date-head">${esc(label)}</th>`;
+  }).join('');
+
+  const subHeaderCells = sessions.map(()=>
+    subCols.map(sc=>`<th class="sub-head">${esc(sc)}</th>`).join('')
+  ).join('');
+
+  const bodyRows = students.map((s,idx)=>{
+    const cells = sessions.map(sess=>{
+      const rec = sess.records[s.id];
+      const lateBad = rec ? rec.late === true : false;
+      const bookBad = rec ? rec.hasBook === false : false;
+      const notebookBad = rec ? rec.hasNotebook === false : false;
+      const focusBad = rec ? rec.isFocused === false : false;
+      const mark = (bad)=> bad ? '<span class="x-mark">✕</span>' : '';
+      const hw = rec ? (rec.hw || null) : null;
+      const hwCell = hw==='yes' ? '<span class="hw-mark hw-yes">✓</span>' : (hw==='no' ? '<span class="hw-mark hw-no">✕</span>' : '<span class="hw-mark hw-none">—</span>');
+      return `<td class="mark-cell">${mark(lateBad)}</td><td class="mark-cell">${mark(bookBad)}</td><td class="mark-cell">${mark(notebookBad)}</td><td class="mark-cell">${mark(focusBad)}</td><td class="mark-cell">${hwCell}</td>`;
+    }).join('');
+    return `<tr><td class="num-cell">${idx+1}</td><td class="name-cell">${esc(s.name)}</td>${cells}</tr>`;
+  }).join('');
+
+  const noSessionsMsg = sessions.length === 0 ? `<p style="text-align:center; color:#888; margin-top:30px;">لا توجد حصص مسجلة لهذا الصف بعد</p>` : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير ${esc(c.name)}</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body{
+    font-family: 'Tajawal', 'Arial', sans-serif;
+    color:#222;
+    margin:0;
+    padding:0;
+  }
+  .report-header{
+    text-align:center;
+    margin-bottom:18px;
+    border-bottom:2px solid #2B3A35;
+    padding-bottom:10px;
+  }
+  .report-header h1{
+    font-size:20px;
+    margin:0 0 4px;
+    color:#2B3A35;
+  }
+  .report-header .sub{
+    font-size:12px;
+    color:#666;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:9px;
+  }
+  th, td{
+    border:1px solid #999;
+    text-align:center;
+    padding:3px 2px;
+  }
+  .date-head{
+    background:#2B3A35;
+    color:#fff;
+    font-size:9.5px;
+    white-space:nowrap;
+  }
+  .sub-head{
+    background:#E3DCC9;
+    font-size:8px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .num-cell{
+    width:22px;
+    font-weight:700;
+    background:#F1ECE1;
+  }
+  .name-cell{
+    text-align:right;
+    padding-right:6px;
+    font-weight:700;
+    white-space:nowrap;
+    background:#F1ECE1;
+  }
+  .mark-cell{ width:16px; }
+  .x-mark{ color:#C44536; font-weight:900; font-size:11px; }
+  .hw-mark{ font-weight:900; font-size:11px; }
+  .hw-mark.hw-yes{ color:#5A8C5A; }
+  .hw-mark.hw-no{ color:#C44536; }
+  .hw-mark.hw-none{ color:#aaa; }
+  .print-btn-bar{
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .print-btn-bar button{
+    background:#C4622D;
+    color:#fff;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  @media print{
+    .print-btn-bar{ display:none; }
+    body{ margin:0; }
+  }
+</style>
+</head>
+<body>
+  <div class="print-btn-bar">
+    <button onclick="window.print()">🖨️ طباعة / حفظ كـ PDF</button>
+  </div>
+  <div class="report-header">
+    <h1>${esc(c.name)}</h1>
+    <div class="sub">تقرير متابعة الطلاب · ${students.length} طالب · ${sessions.length} حصة مسجلة</div>
+  </div>
+  ${sessions.length > 0 ? `
+  <table>
+    <thead>
+      <tr><th rowspan="2" class="num-cell">الرقم</th><th rowspan="2" class="name-cell" style="text-align:center;">الاسم</th>${dateHeaderCells}</tr>
+      <tr>${subHeaderCells}</tr>
+    </thead>
+    <tbody>
+      ${bodyRows}
+    </tbody>
+  </table>` : noSessionsMsg}
+</body>
+</html>`;
+
+  const reportWindow = window.open('', '_blank');
+  if(!reportWindow){
+    showToast('يرجى السماح بالنوافذ المنبثقة لعرض التقرير');
+    return;
+  }
+  reportWindow.document.write(html);
+  reportWindow.document.close();
+}
+
+function generateStudentReport(classId, studentId){
+  const c = DB.classes.find(x=>x.id===classId);
+  const s = c?.students.find(x=>x.id===studentId);
+  if(!c || !s) return;
+
+  const sessions = DB.sessions
+    .filter(x=>x.classId===classId && x.records[studentId])
+    .sort((a,b)=>{
+      const cmp = a.date.localeCompare(b.date);
+      if(cmp !== 0) return cmp;
+      return (a.seq||1)-(b.seq||1);
+    });
+
+  const presentN = sessions.filter(r=>r.records[studentId].status!=='absent').length;
+  const absentN = sessions.filter(r=>r.records[studentId].status==='absent').length;
+  const lateN = sessions.filter(r=>r.records[studentId].late===true).length;
+  const hwYesN = sessions.filter(r=>r.records[studentId].hw==='yes').length;
+  const hwNoN = sessions.filter(r=>r.records[studentId].hw==='no').length;
+
+  const countByDate = {};
+  sessions.forEach(s2=>{ countByDate[s2.date] = (countByDate[s2.date]||0)+1; });
+  const seenSoFar = {};
+
+  const rows = sessions.map(sess=>{
+    seenSoFar[sess.date] = (seenSoFar[sess.date]||0)+1;
+    const label = countByDate[sess.date] > 1 ? ` (الحصة ${seenSoFar[sess.date]})` : '';
+    const rec = sess.records[studentId];
+    const isAbsent = rec.status === 'absent';
+    const isLate = rec.late === true;
+    const statusTxt = isAbsent ? '✕' : (isLate ? 'متأخر' : '✓');
+    const statusClass = isAbsent ? 'st-absent' : (isLate ? 'st-late' : 'st-present');
+    const hasBook = rec.hasBook !== false;
+    const hasNotebook = rec.hasNotebook !== false;
+    const isFocused = rec.isFocused !== false;
+    const hw = rec.hw || null;
+    const hwTxt = hw==='yes' ? '✓' : (hw==='no' ? '✕' : '—');
+    const hwClass = hw==='yes' ? 'st-present' : (hw==='no' ? 'st-absent' : 'st-none');
+    const okBad = (ok)=> ok ? '<span class="ok-mark">✓</span>' : '<span class="x-mark2">✕</span>';
+    return `
+    <tr>
+      <td class="name-cell2">${esc(fmtFull(sess.date))}${esc(label)}</td>
+      <td><span class="status-pill ${statusClass}">${esc(statusTxt)}</span></td>
+      <td>${okBad(hasBook)}</td>
+      <td>${okBad(hasNotebook)}</td>
+      <td>${okBad(isFocused)}</td>
+      <td><span class="status-pill ${hwClass}">${esc(hwTxt)}</span></td>
+      <td class="note-cell">${esc(rec.note || '')}</td>
+    </tr>`;
+  }).join('');
+
+  const noSessionsMsg = sessions.length === 0 ? `<p style="text-align:center; color:#888; margin-top:30px;">لا يوجد سجل لهذا الطالب بعد</p>` : '';
+
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير ${esc(s.name)}</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body{
+    font-family: 'Tajawal', 'Arial', sans-serif;
+    color:#222;
+    margin:0;
+    padding:0;
+  }
+  .report-header{
+    text-align:center;
+    margin-bottom:14px;
+    border-bottom:2px solid #2B3A35;
+    padding-bottom:10px;
+  }
+  .report-header h1{
+    font-size:21px;
+    margin:0 0 4px;
+    color:#2B3A35;
+  }
+  .report-header .sub{
+    font-size:12.5px;
+    color:#666;
+  }
+  .stat-strip{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .stat-pill{
+    background:#F1ECE1;
+    border-radius:10px;
+    padding:8px 14px;
+    text-align:center;
+    min-width:78px;
+  }
+  .stat-pill b{ display:block; font-size:16px; color:#2B3A35; }
+  .stat-pill span{ font-size:10.5px; color:#777; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:11px;
+  }
+  th, td{
+    border:1px solid #999;
+    text-align:center;
+    padding:6px 5px;
+  }
+  th{
+    background:#2B3A35;
+    color:#fff;
+    font-size:11px;
+    white-space:nowrap;
+  }
+  .name-cell2{
+    text-align:right;
+    padding-right:8px;
+    font-weight:700;
+    white-space:nowrap;
+    background:#F1ECE1;
+  }
+  .note-cell{ text-align:right; padding-right:8px; color:#555; }
+  .status-pill{
+    display:inline-block;
+    padding:2px 9px;
+    border-radius:20px;
+    font-size:10.5px;
+    font-weight:700;
+  }
+  .st-present{ background:#e7f3e3; color:#5A8C5A; }
+  .st-absent{ background:#fbeae7; color:#C44536; }
+  .st-late{ background:#fbf1de; color:#D4A24C; }
+  .st-none{ background:#f0f0ee; color:#999; }
+  .ok-mark{ color:#5A8C5A; font-weight:900; }
+  .x-mark2{ color:#C44536; font-weight:900; }
+  .print-btn-bar{
+    text-align:center;
+    margin-bottom:14px;
+  }
+  .print-btn-bar button{
+    background:#C4622D;
+    color:#fff;
+    border:none;
+    padding:10px 22px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  @media print{
+    .print-btn-bar{ display:none; }
+    body{ margin:0; }
+  }
+</style>
+</head>
+<body>
+  <div class="print-btn-bar">
+    <button onclick="window.print()">🖨️ طباعة / حفظ كـ PDF</button>
+  </div>
+  <div class="report-header">
+    <h1>${esc(s.name)}</h1>
+    <div class="sub">${esc(c.name)} · تقرير شامل لكل الحصص</div>
+  </div>
+  ${sessions.length > 0 ? `
+  <div class="stat-strip">
+    <div class="stat-pill"><b>${presentN}</b><span>أيام حضور</span></div>
+    <div class="stat-pill"><b>${absentN}</b><span>أيام غياب</span></div>
+    <div class="stat-pill"><b>${lateN}</b><span>مرات تأخير</span></div>
+    <div class="stat-pill"><b>${hwYesN}</b><span>واجب مسلّم</span></div>
+    <div class="stat-pill"><b>${hwNoN}</b><span>واجب غير مسلّم</span></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>التاريخ</th>
+        <th>الحضور</th>
+        <th>كتاب</th>
+        <th>دفتر</th>
+        <th>تركيز</th>
+        <th>الواجب</th>
+        <th>ملاحظة</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows}
+    </tbody>
+  </table>` : noSessionsMsg}
+</body>
+</html>`;
+
+  const reportWindow = window.open('', '_blank');
+  if(!reportWindow){
+    showToast('يرجى السماح بالنوافذ المنبثقة لعرض التقرير');
+    return;
+  }
+  reportWindow.document.write(html);
+  reportWindow.document.close();
+}
+
+function importBackupFile(file){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data.classes || !data.sessions) throw new Error('bad');
+      if(confirm('سيتم استبدال كل البيانات الحالية بالنسخة المستوردة. متابعة؟')){
+        DB = data; saveDB(); nav({screen:'home'});
+        showToast('تم استيراد النسخة الاحتياطية');
+      }
+    }catch(err){
+      alert('ملف غير صالح');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* hidden file input for import */
+const fileImport = document.createElement('input');
+fileImport.type='file'; fileImport.accept='application/json'; fileImport.id='fileImport';
+fileImport.style.display='none';
+fileImport.addEventListener('change', (e)=>{ if(e.target.files[0]) importBackupFile(e.target.files[0]); });
+document.body.appendChild(fileImport);
+
+/* hidden file input for student-list import (xlsx/csv/txt) */
+const fileImportStudents = document.createElement('input');
+fileImportStudents.type='file';
+fileImportStudents.accept='.xlsx,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+fileImportStudents.id='fileImportStudents';
+fileImportStudents.style.display='none';
+fileImportStudents.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  const classId = e.target.getAttribute('data-classid');
+  if(f && classId) handleImportFile(f, classId);
+  e.target.value = '';
+});
+document.body.appendChild(fileImportStudents);
+
+/* hidden file input for image-based student-list import (uses Anthropic API, needs internet) */
+const fileImportImage = document.createElement('input');
+fileImportImage.type='file';
+fileImportImage.accept='image/*';
+fileImportImage.id='fileImportImage';
+fileImportImage.style.display='none';
+fileImportImage.addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  const classId = e.target.getAttribute('data-classid');
+  if(f && classId) handleImageImport(f, classId);
+  e.target.value = '';
+});
+document.body.appendChild(fileImportImage);
+
+/* ===================== INIT ===================== */
+render();
+
+/* register service worker for offline support */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
